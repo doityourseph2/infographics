@@ -194,42 +194,83 @@ let data = {
 let centerX, centerY, radius;
 let hoveredMeal = null;
 let visiblePeople = new Set(data.people.map(p => p.name)); // Initially all visible
+let gradientColors;
 
 function setup() {
   createCanvas(800, 890);
   angleMode(DEGREES);
   
   centerX = width / 2;
-  centerY = height / 2;
-  radius = min(width, height) * 0.4;
+  centerY = height / 2 + 50; // Moved down to accommodate title
+  radius = min(width, height) * 0.35;
+  
+  // Create gradient colors for background
+  gradientColors = [
+    color(255, 251, 245),
+    color(253, 247, 235)
+  ];
 }
 
 function draw() {
-  background(255);
+  // Draw gradient background
+  drawGradientBackground();
+  
+  // Draw title
+  drawTitle();
+  
   drawClockFace();
   drawDayLabels();
   drawMealData();
 }
 
-function drawClockFace() {
-  // Draw outer circle
+function drawGradientBackground() {
   noFill();
-  stroke(200);
-  strokeWeight(1);
+  for (let y = 0; y < height; y++) {
+    let inter = map(y, 0, height, 0, 1);
+    let c = lerpColor(gradientColors[0], gradientColors[1], inter);
+    stroke(c);
+    line(0, y, width, y);
+  }
+}
+
+function drawTitle() {
+  push();
+  // Draw main title
+  textAlign(CENTER, CENTER);
+  textStyle(BOLD);
+  textSize(28);
+  fill(40);
+  noStroke();
+  text("How consistent are our meals?", width/2, 40);
+  
+  // Draw subtitle
+  textStyle(NORMAL);
+  textSize(14);
+  fill(80);
+  text("A 6-day analysis of eating patterns across 5 individuals", width/2, 70);
+  pop();
+}
+
+function drawClockFace() {
+  // Draw outer circle with gradient
+  push();
+  noFill();
+  strokeWeight(2);
+  stroke(180, 180, 180, 100);
   circle(centerX, centerY, radius * 2);
+  pop();
   
-  // Draw concentric day circles
-  data.days.forEach((day, index) => {
-    let dayRadius = radius - (index * 20);
-    push();
-    noFill();
-    stroke(220);
-    strokeWeight(0.5);
-    circle(centerX, centerY, dayRadius * 2);
-    pop();
-  });
+  // Draw decorative circles
+  push();
+  noFill();
+  strokeWeight(0.5);
+  for (let i = 0; i < 3; i++) {
+    stroke(180, 180, 180, 50);
+    circle(centerX, centerY, (radius * 2) + (i * 10));
+  }
+  pop();
   
-  // Draw hour markers and labels
+  // Draw hour markers and labels with enhanced style
   for (let i = 0; i < 24; i++) {
     let angle = map(i, 0, 24, -90, 270);
     
@@ -238,8 +279,15 @@ function drawClockFace() {
     let y1 = centerY + sin(angle) * radius;
     let x2 = centerX + cos(angle) * (radius - 10);
     let y2 = centerY + sin(angle) * (radius - 10);
-    strokeWeight(1);
-    stroke(150);
+    
+    // Thicker lines for main hours
+    if (i % 6 === 0) {
+      strokeWeight(2);
+      stroke(100);
+    } else {
+      strokeWeight(1);
+      stroke(150);
+    }
     line(x1, y1, x2, y2);
     
     // Draw half-hour markers
@@ -251,17 +299,18 @@ function drawClockFace() {
     strokeWeight(0.5);
     line(x3, y3, x4, y4);
     
-    // Add hour labels
+    // Enhanced hour labels
     push();
     translate(
-      centerX + cos(angle) * (radius + 20),
-      centerY + sin(angle) * (radius + 20)
+      centerX + cos(angle) * (radius + 25),
+      centerY + sin(angle) * (radius + 25)
     );
     rotate(angle + 90);
     noStroke();
-    fill(100);
+    fill(80);
     textAlign(CENTER);
-    textSize(12);
+    textSize(11);
+    textStyle(i % 6 === 0 ? BOLD : NORMAL);
     text(i + ':00', 0, 0);
     pop();
   }
@@ -271,21 +320,23 @@ function drawDayLabels() {
   data.days.forEach((day, index) => {
     let dayRadius = radius - (index * 20);
     
-    // Draw concentric circles for each day
+    // Draw concentric circles with gradient
     push();
     noFill();
-    stroke(220);
-    strokeWeight(1);
+    stroke(220, 220, 220, 150);
+    strokeWeight(0.5);
     circle(centerX, centerY, dayRadius * 2);
     
-    // Add day label
-    fill(80);
-	strokeWeight(6);
-	stroke(255);
-	strokeJoin(ROUND);
-    textAlign(CENTER);
-    textSize(10);
-    text(day, centerX, centerY - dayRadius + 3);
+    // Add day label with enhanced style
+    fill(60);
+    strokeWeight(4);
+    stroke(255);
+    strokeJoin(ROUND);
+    textAlign(CENTER, CENTER);
+    textSize(11);
+    textStyle(BOLD);
+    // Position text back on the circle, slightly above
+    text(day.toUpperCase(), centerX, centerY - dayRadius+2);
     pop();
   });
 }
@@ -389,6 +440,17 @@ function drawMealData() {
   
   drawPeopleLegend();
   drawLegend();
+  
+  // Add glow effect to dots
+  if (hoveredMeal) {
+    push();
+    noStroke();
+    fill(255, 255, 255, 50);
+    for (let i = 0; i < 3; i++) {
+      circle(hoveredMeal.x, hoveredMeal.y, 12 + (i * 4));
+    }
+    pop();
+  }
 } 
 
 function drawPeopleLegend() {
