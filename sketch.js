@@ -329,7 +329,7 @@ function drawDayLabels() {
     
     // Add day label with enhanced style
     fill(60);
-    strokeWeight(4);
+    strokeWeight(3);
     stroke(255);
     strokeJoin(ROUND);
     textAlign(CENTER, CENTER);
@@ -376,7 +376,7 @@ function drawMealData() {
               
               // Add subtle glow effect to lines
               stroke(color(person.color + '33')); // More transparent for glow
-              strokeWeight(4);
+              strokeWeight(3);
               line(x, y, prevX, prevY);
               pop();
             }
@@ -508,7 +508,7 @@ function drawPeopleLegend() {
     if (isVisible) {
       // Add glow effect
       stroke(color(person.color + '33'));
-      strokeWeight(4);
+      strokeWeight(3);
       line(currentX, legendY, currentX + 20, legendY);
       
       // Main line
