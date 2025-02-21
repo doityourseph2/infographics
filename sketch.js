@@ -342,45 +342,78 @@ function drawDayLabels() {
 }
 
 function drawMealData() {
+  // First draw all lines (to keep them behind dots)
   data.people.forEach((person, personIndex) => {
-    if (!visiblePeople.has(person.name)) return; // Skip if person is hidden
+    if (!visiblePeople.has(person.name)) return;
     
     data.days.forEach((day, dayIndex) => {
       let dayRadius = radius - (dayIndex * 20);
       let dayMeals = person.meals?.[day.toLowerCase()];
       
-      // Only process if the person has meals data for this day
       if (dayMeals) {
         Object.entries(dayMeals).forEach(([mealType, meal]) => {
-          // Skip if meal is null or undefined
           if (!meal) return;
           
           let angle = map(meal.time, 0, 24, -90, 270);
           let x = centerX + cos(angle) * dayRadius;
           let y = centerY + sin(angle) * dayRadius;
           
-          // Draw meal marker
-          push();
-          noStroke();
-          fill(data.foodCategories[meal.category]);
-          circle(x, y, 8);
-          
           // Draw connecting line to previous day's same meal
           if (dayIndex > 0) {
             let prevDay = data.days[dayIndex - 1].toLowerCase();
             let prevMeal = person.meals?.[prevDay]?.[mealType];
             
-            // Only draw connection if both meals exist
             if (prevMeal) {
               let prevAngle = map(prevMeal.time, 0, 24, -90, 270);
               let prevX = centerX + cos(prevAngle) * (dayRadius + 20);
               let prevY = centerY + sin(prevAngle) * (dayRadius + 20);
               
-              stroke(person.color);
-              strokeWeight(1);
+              // Enhanced line style
+              push();
+              stroke(color(person.color + '99')); // Add some transparency
+              strokeWeight(2.5); // Thicker lines
               line(x, y, prevX, prevY);
+              
+              // Add subtle glow effect to lines
+              stroke(color(person.color + '33')); // More transparent for glow
+              strokeWeight(4);
+              line(x, y, prevX, prevY);
+              pop();
             }
           }
+        });
+      }
+    });
+  });
+  
+  // Then draw all dots (to keep them on top of lines)
+  data.people.forEach((person, personIndex) => {
+    if (!visiblePeople.has(person.name)) return;
+    
+    data.days.forEach((day, dayIndex) => {
+      let dayRadius = radius - (dayIndex * 20);
+      let dayMeals = person.meals?.[day.toLowerCase()];
+      
+      if (dayMeals) {
+        Object.entries(dayMeals).forEach(([mealType, meal]) => {
+          if (!meal) return;
+          
+          let angle = map(meal.time, 0, 24, -90, 270);
+          let x = centerX + cos(angle) * dayRadius;
+          let y = centerY + sin(angle) * dayRadius;
+          
+          // Draw meal marker with enhanced style
+          push();
+          // Add subtle shadow
+          noStroke();
+          fill(0, 0, 0, 20);
+          circle(x + 1, y + 1, 9);
+          
+          // Draw main dot
+          fill(data.foodCategories[meal.category]);
+          stroke(255);
+          strokeWeight(1);
+          circle(x, y, 8);
           pop();
         });
       }
@@ -471,13 +504,22 @@ function drawPeopleLegend() {
     fill(isVisible ? 255 : 240);
     rect(currentX - 5, legendY - 12, textWidth(person.name) + 45, 24, 5);
     
-    // Draw line sample
-    stroke(person.color);
-    strokeWeight(2);
-    if (!isVisible) {
-      stroke(200); // Gray out if not visible
+    // Draw line sample with enhanced style
+    if (isVisible) {
+      // Add glow effect
+      stroke(color(person.color + '33'));
+      strokeWeight(4);
+      line(currentX, legendY, currentX + 20, legendY);
+      
+      // Main line
+      stroke(color(person.color + '99'));
+      strokeWeight(2.5);
+      line(currentX, legendY, currentX + 20, legendY);
+    } else {
+      stroke(200);
+      strokeWeight(2);
+      line(currentX, legendY, currentX + 20, legendY);
     }
-    line(currentX, legendY, currentX + 20, legendY);
     
     // Draw name
     noStroke();
